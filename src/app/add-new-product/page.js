@@ -46,6 +46,15 @@ function AddProductPage() {
     },
   })
 
+  
+  const {data: categoryInfo = []} = useQuery({
+    queryKey: ["categoryInfo"],
+    queryFn: async () => {
+        const res = await axiosPublic.get('/layout/category/');
+        return res.data;
+    },
+    })
+
   const onSubmit = async (data) => {
     setLoading(true);
     try {
@@ -110,8 +119,10 @@ function AddProductPage() {
       const response = await axiosPublic.post('/products/addnewProduct', newProduct);
       if (response.status === 201) {
         setSelectedImages([])
-        // setSelectedVariation([])
-        // reset()
+        setSelectedVariation([])
+        setNewProductTag([])
+        setProductTag("")
+        reset()
         Swal.fire({
           icon: "success",
           title: "Product Added Successfully!",
@@ -122,7 +133,7 @@ function AddProductPage() {
           title: "Something went wrong",
         });
       }
-    } catch (err) {
+    } catch (err) { 
       console.error('Error adding product to database:', err);
     } finally {
       setLoading(false);
@@ -177,15 +188,6 @@ function AddProductPage() {
   const genderArray = [
     {key: "male", label: "Male"},
     {key: "female", label: "Female"}
-  ];
-
-  const categoryArray = [
-    {key: "t-shirt", label: "T-Shirt", imgUrl: "https://i.ibb.co.com/h7VCXSh/1.jpg"},
-    {key: "jacket", label: "Jacket", imgUrl: "https://i.ibb.co.com/Tgp8JTf/4.jpg"},
-    {key: "hoodei", label: "Hoodei", imgUrl: "https://i.ibb.co.com/WtsxCqJ/5.jpg"},
-    {key: "belt", label: "Belt", imgUrl: "https://i.ibb.co.com/tQ6gKrw/6.jpg"},
-    {key: "wallet", label: "Wallet", imgUrl: "https://i.ibb.co.com/xJhqQXB/7.jpg"},
-    {key: "panjabi", label: "Panjabi", imgUrl: "https://i.ibb.co.com/vmH9Jqd/8.jpg"},
   ];
 
   const addNewColorVariation = async (onClose) => {
@@ -340,7 +342,7 @@ function AddProductPage() {
               labelPlacement="outside" 
               variant="faded" radius="sm" 
               placeholder="Select a Category" fullWidth>
-              {categoryArray.map((category) => (
+              {categoryInfo.map((category) => (
                 <SelectItem className="text-medium" key={category.key} textValue={category.label}>
                   {category.label}
                 </SelectItem>
