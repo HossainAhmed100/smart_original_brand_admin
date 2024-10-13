@@ -1,60 +1,105 @@
 "use client"
-import { Input, Button, Select, SelectItem, Image, Textarea, ModalContent, Modal, ModalHeader, ModalBody, ModalFooter, useDisclosure, Chip, Spinner } from "@nextui-org/react";
+import { Input, Button, Select, SelectItem, Image, Textarea, ModalContent, Modal, ModalHeader, ModalBody, ModalFooter, useDisclosure, Card, CardBody, Chip, Spinner } from "@nextui-org/react";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
-import { FaPercent } from "react-icons/fa6";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import Swal from "sweetalert2";
+import { storage } from "@/firebase/firebase.config";
+import { CloudArrowUp } from "@phosphor-icons/react";
+import useAxiosPublic from "@/hooks/useAxiosPublic";
 import { useQuery } from "@tanstack/react-query";
+import { IoIosAddCircle } from "react-icons/io";
+import toast from "react-hot-toast";
 
-const UpdateProduct = ({ params }) => {
+function UpdtaeProdcut({ params })  {
   useEffect(() => {
-    document.title = 'Update Product Product | Admin Dashboard | Zero Exclusive Online Shop';
+    document.title = 'Update Product Product | Admin Dashboard | Smart Original Brand Online Shop';
   }, []);
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
-  const [selectedImages, setSelectedImages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const {isOpen, onOpen, onOpenChange} = useDisclosure();
-  const [sizeValues, setSizeValues] = useState(["xs", "xl"]);
-  const [colorTyped, setColorTyped] = useState("");
-  const axiosSecure = useAxiosSecure();
-  const [color, setColor] = useState([]);
+  const [sizeValues, setSizeValues] = useState([]);
+  const [selectSizeGuide, setSelectSizeGuide] = useState('');
+  const [selectedVariation, setSelectedVariation] = useState([]);
+  const [productTag, setProductTag] = useState("");
+  const [newProductTag, setNewProductTag] = useState([]);
+  const axiosPublic = useAxiosPublic();
+
+  const {data: sizeGuideInfo = []} = useQuery({
+    queryKey: ["sizeGuideInfo"],
+    queryFn: async () => {
+      const res = await axiosPublic.get('/layout/sizeGuide/');
+      const nondeSizeGuide = {
+        _id: "none",
+        name: "None",
+        key: "none",
+        imgUrl: "none",
+      };
+      const sizeGuideDatas = res.data;
+      const newSizeGuide = [nondeSizeGuide, ...sizeGuideDatas];
+      return newSizeGuide;
+    },
+  })
 
   const { data: productData = [], isLoading } = useQuery({
     queryKey: ['productData', params.id],
     queryFn: async () => {
-      const res = await axiosSecure.get(`/products/productsById/${params.id}`);
-      const morePhotos = res.data?.morePhotos;
-      const dataColors = res.data?.productColors;
+      const res = await axiosPublic.get(`/products/productsById/${params.id}`);
+      const morePhotos = res.data?.images;
+      const ssSizes = res.data?.sizes;
       setSelectedImages([...morePhotos])
-      setColorTyped([...dataColors])
+      setSizeValues([...ssSizes])
       return res.data;
     }
   });
 
-  const handleAddColor = () => {
-    const newColor = [...color, colorTyped];
-    setColor(newColor)
-    setColorTyped("")
-  }
+  const {data: categoryInfo = []} = useQuery({
+    queryKey: ["categoryInfo"],
+    queryFn: async () => {
+        const res = await axiosPublic.get('/layout/category/');
+        return res.data;
+    },
+    })
 
- // Form submission handler
-  const onSubmit = async (data) => {
-    setLoading(true)
-  const originalProduct = {
-    title: data.title,
-    brand: data.brand,
-    category: data.category,
-    price: data.price,
-    discount: data.discount,
-    discountType: data.discountType,
-    sku: data.sku,
-    quantity: data.quantity,
-    description: data.description,
-    rating: productData.rating,
-    thumbnail: productData.thumbnail,
-    morePhotos: productData.morePhotos,
-  };
-  await axiosSecure.put(`/products/${productId}`, originalProduct)
+    const onSubmit = async (data) => {
+      setLoading(true);
+      const { title, brand, category, description, gender } = data;
+      const slug = productData.slug;
+      const originalPrice = parseFloat(data.originalPrice);
+      const sellingPrice = parseFloat(data.sellingPrice);
+      const quantity = parseInt(data.quantity);
+      const productSizes = Array.from(sizeValues);
+      const variation = productData.variation;
+      const sku = productData.sku;
+      const tag = newProductTag ? newProductTag : [category];
+      const thumbImage = productData.thumbImage;
+      const images = productData.images;
+      const newProduct = {
+        category,
+        type: category,
+        name: title,
+        gender,
+        new: false,
+        sale: false,
+        rate: 5,
+        price: sellingPrice,
+        originPrice: originalPrice,
+        brand,
+        sold: 0,
+        quantity,
+        quantityPurchase: 0,
+        sizes: productSizes,
+        variation,
+        thumbImage,
+        images,
+        description,
+        action: "quick shop",
+        slug,
+        tag,
+        sku
+      };
+      console.log(newProduct)
+
+      await axiosSecure.put(`/products/${productId}`, newProduct)
     .then((response) => {
       setLoading(false)
       console.log("🚀 ~ .then ~ response:", response)
@@ -63,72 +108,126 @@ const UpdateProduct = ({ params }) => {
         refetch()
       }
     })
+    };
+
+  const generateSlug = (name) => {
+    const final = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const timestamp = Date.now();
+    return `${final}-${timestamp}`;
   };
 
-    // Function to handle image selection
-    const handleImageSelect = (event) => {
-      const files = Array.from(event.target.files).filter(
-        (file) => ["image/png", "image/jpg", "image/jpeg"].includes(file.type)
-      );
-      setSelectedImages(files);
+  // Function to handle product data upload to the server
+  const handleProductUpload = async (data, images) => {
+    setLoading(true);
+    const { title, brand, category, description, gender } = data;
+    const slug = generateSlug(title);
+    const originalPrice = parseFloat(data.originalPrice);
+    const sellingPrice = parseFloat(data.sellingPrice);
+    const quantity = parseInt(data.quantity);
+    const productSizes = Array.from(sizeValues);
+    const variation = selectedVariation;
+    const sku = data.sku;
+    const tag = newProductTag ? newProductTag : [category];
+    const thumbImage = [images[0], images[1]];
+    const newProduct = {
+      category,
+      type: category,
+      name: title,
+      gender,
+      new: false,
+      sale: false,
+      rate: 5,
+      price: sellingPrice,
+      originPrice: originalPrice,
+      brand,
+      sold: 0,
+      quantity,
+      quantityPurchase: 0,
+      sizes: productSizes,
+      variation,
+      thumbImage,
+      images,
+      description,
+      action: "quick shop",
+      slug,
+      tag,
+      sku
     };
-  
-    // Function to handle image replacement
-    const handleReplaceImage = (index) => (event) => {
-      const file = event.target.files[0];
-      if (file && ["image/png", "image/jpg", "image/jpeg"].includes(file.type)) {
-        setSelectedImages((prevImages) => prevImages.map((img, i) => (i === index ? file : img)));
-      }
-    };
-  
-    // Function to handle image removal
-    const handleRemoveImage = (index) => () => {
-      setSelectedImages((prevImages) => prevImages.filter((_, i) => i !== index));
-    };
-
-
-  const discountTypes = [
-    { id: 1, key: "cashDiscount", label: "Cash Discount" },
-    { id: 3, key: "buyOneGetOneFree", label: "Buy One Get One Free"},
-    { id: 5, key: "clearanceDiscount", label: "Clearance Discount" },
-    { id: 6, key: "loyaltyDiscount", label: "Loyalty Discount" },
-    { id: 7, key: "holidayDiscount", label: "Holiday Discount" },
-    { id: 11, key: "studentDiscount", label: "Student Discount" },
-    { id: 19, key: "limitedTimeDiscount", label: "Limited Time Discount" },
-    { id: 20, key: "flashSaleDiscount", label: "Flash Sale Discount" }
-  ];
-
-  const categoryList = [
-    { id: "Trouser", label: "Trouser" },
-    { id: "Jersey", label: "Jersey" },
-    { id: "Panjabi", label: "Panjabi" },
-    { id: "T-Shirt", label: "T-Shirt" },
-    { id: "PoloShirt", label: "Polo Shirt" },
-    { id: "Attar", label: "Attar" },
-    { id: "Tupi", label: "Tupi" },
-    { id: "Janamaz", label: "Janamaz" },
-  ];
-  
-  const deleteColorName = (itemToRemove) => {
-    const filtered = color.filter(item => item !== itemToRemove);
-
-    if (filtered.length === 0) {
-        setColor([]); // Set it as an array with the initial color name
+    console.log(newProduct)
+    try {
+      const response = await axiosPublic.post('/products/addnewProduct', newProduct);
+      if (response.status === 201) {
+        setSelectedImages([])
+        setSelectedVariation([])
+        setNewProductTag([])
+        setProductTag("")
+        reset()
+        Swal.fire({
+          icon: "success",
+          title: "Product Added Successfully!",
+        })
       } else {
-      setColor(filtered); // Set it as an array with the initial color name
-        
+        Swal.fire({
+          icon: "warning",
+          title: "Something went wrong",
+        });
+      }
+    } catch (err) { 
+      console.error('Error adding product to database:', err);
+    } finally {
+      setLoading(false);
     }
-};
+  };
+
+  // Function to upload image to Firebase
+  const uploadImageAsync = async (file) => {
+    try {
+        // Use the file directly as it's already a Blob
+        const fileRef = ref(storage, `image/image-${Date.now()}-${file.name}`);
+        await uploadBytes(fileRef, file);
+        console.log("Uploaded file:", fileRef);
+        return await getDownloadURL(fileRef);
+    } catch (error) {
+        console.error('Error uploading image:', error);
+        throw error;
+    }
+  };
 
   const sizeArrays = [
-    {key: "xs", label: "L"},
+    {key: "xs", label: "XS"},
     {key: "s", label: "S"},
     {key: "m", label: "M"},
     {key: "l", label: "L"},
     {key: "xl", label: "XL"},
-    {key: "2xl", label: "2XL"},
+    {key: "xxl", label: "XXL"},
+    {key: "3xl", label: "3XL"},
   ];
 
+  const genderArray = [
+    {key: "male", label: "Male"},
+    {key: "female", label: "Female"}
+  ];
+
+  const handleAddProductTag = () => {
+    if(productTag){
+      const final = productTag.replace(/\s+/g, '').toLowerCase();
+      const newTag = [...newProductTag, final];
+      setNewProductTag(newTag)
+      setProductTag("")
+    }else{
+      toast.error("Please Write Product Tag First!")
+    }
+  }
+
+  const handleDeleteProductTag = (itemToRemove) => {
+    setNewProductTag(newProductTag.filter(item => item !== itemToRemove));
+    if (newProductTag.length === 1) {
+      setNewProductTag([]);
+    }
+    toast.success('Removed Successfully!');
+  }
+
+  
   if(isLoading) {
     return <div className="flex justify-center items-center h-screen"><Spinner size="xl" className="animate-spin" /></div>
   }
@@ -137,46 +236,39 @@ const UpdateProduct = ({ params }) => {
     <section>
       <form onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-4">
-        
-        {/* Product Image Upload Section */}
-        <div className="border-1 border-gray-200 rounded-md">
-          <div className="px-4 border-b-1 gap-2 py-2 flex flex-col md:flex-row items-center justify-between">
-            <h1>Select Product Image</h1>
-            <p className="text-xs text-gray-500">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
-          </div>
-          <div className="grid xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2 grid-cols-1 p-4 gap-4">
-
-            <ImageSelectInput handleImageSelect={handleImageSelect} />
-
-            {selectedImages.map((image, index) => (
-              <SelectedImagePreview 
-                key={index}
-                image={image}
-                onReplace={handleReplaceImage(index)}
-                onRemove={handleRemoveImage(index)}
-              />
-            ))}
-          </div>
-        </div>
 
         {/* General Information Form Section */}
-        <div className="border-1 border-gray-200 rounded-md">
-        <div className="px-4 border-b-1 gap-2 py-2 flex flex-col md:flex-row items-center justify-between">
-          <h1>General Information</h1>
-          <p className="text-xs text-gray-500">Fill in the product details below</p>
+        <div className="border-1 border-gray-200 rounded-md overflow-hidden">
+        <div className="px-4 border-b-1 gap-2 py-2 flex flex-col md:flex-row bg-gray-700 items-center justify-between">
+          <h1 className="text-white">General Information</h1>
+          <p className="text-xs text-white">Fill in the product details below</p>
         </div>
         <div className="p-4 space-y-4">
-          <Input {...register("title", { required: true })} defaultValue={productData?.title}  labelPlacement="outside" variant="faded" radius="sm" label="Product Name" placeholder="Enter product name" fullWidth />
+          <Input {...register("title", { required: true })} 
+          labelPlacement="outside" 
+          variant="faded" radius="sm" 
+          label="Product Name" 
+          defaultValue={productData?.name}
+          placeholder="Enter product name" fullWidth />
           {errors.title && <span className="text-tiny text-red-500">This field is required</span>}
           <div className="grid grid-cols-2 gap-4">
             <div>
-            <Input {...register("brand", { required: true })} defaultValue={productData?.brand} labelPlacement="outside" variant="faded" radius="sm" label="Product Brand" placeholder="Type Brnad name" fullWidth />
+            <Input {...register("brand", { required: true })} 
+            labelPlacement="outside" 
+            variant="faded" radius="sm" 
+            label="Product Brand"
+            defaultValue={productData?.brand} 
+            placeholder="Type Brnad name" fullWidth />
             {errors.brand && <span className="text-tiny text-red-500">This field is required</span>}
             </div>
             <div>
-            <Select {...register("category", { required: true })} label="Product Category" labelPlacement="outside" variant="faded" radius="sm" placeholder="Select a Category" fullWidth>
-              {categoryList.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
+            <Select {...register("category", { required: true })} 
+              label="Product Category" 
+              labelPlacement="outside" 
+              variant="faded" radius="sm" 
+              placeholder="Select a Category" fullWidth>
+              {categoryInfo.map((category) => (
+                <SelectItem className="text-medium" key={category.key} textValue={category.label}>
                   {category.label}
                 </SelectItem>
               ))}
@@ -186,127 +278,126 @@ const UpdateProduct = ({ params }) => {
           </div>
         </div>
         </div>
-        
-        {/* Size and Color Section */}
-        <div className="border-1 border-gray-200 rounded-md">
-          <div className="px-4 border-b-1 gap-2 py-2 flex flex-col md:flex-row items-center justify-between">
-            <h1>Color</h1>
-            <Button onPress={onOpen} color="primary">Add Color Varient</Button>
-          </div>
-          <div className="p-4 space-y-4">
-          <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="top-center">
-              <ModalContent>
-                {(onClose) => (
-                  <>
-                    <ModalHeader className="flex flex-col gap-1">Log in</ModalHeader>
-                    <ModalBody>
-                      <Input
-                        autoFocus
-                        label="Type Color Name"
-                        placeholder="Enter your name"
-                        variant="bordered"
-                        value={colorTyped}
-                        onValueChange={setColorTyped}
-                      />
-                    </ModalBody>
-                    <ModalFooter>
-                      <Button onClick={() => handleAddColor()} color="primary" onPress={onClose}>
-                        Add
-                      </Button>
-                    </ModalFooter>
-                  </>
-                )}
-              </ModalContent>
-            </Modal>
-            <div className="gap-4">
-            {color.map((item, index) => <Chip onClose={() => deleteColorName(item)} key={index} color="default">{item}</Chip>)}
-            </div>
-          </div>
-        </div>
-
 
         {/* Size Section */}
-        <div className="border-1 border-gray-200 rounded-md">
-          <div className="px-4 border-b-1 gap-2 py-2 flex flex-col md:flex-row items-center justify-between">
-            <h1>Select Sizes</h1>
-            <p className="text-xs text-gray-500">Enter the product avivlable sizes</p>
+        <div className="border-1 border-gray-200 rounded-md overflow-hidden">
+          <div className="px-4 border-b-1 gap-2 bg-gray-700 py-2 flex flex-col md:flex-row items-center justify-between">
+            <h1 className="text-white">Select Sizes</h1>
+            <p className="text-xs text-white">Select the available product sizes</p>
           </div>
           <div className="p-4 space-y-4">
-          <div className="flex w-full max-w-xs flex-col gap-2">
-            <Select
-              label="Favorite Animal"
+          
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+            <Select 
               selectionMode="multiple"
-              placeholder="Select an animal"
+              label="Select Product Sizes"
+              labelPlacement="outside" 
+              variant="faded" radius="sm"
+              {...register("productSize", { required: true })}  
               selectedKeys={sizeValues}
-              className="max-w-xs"
               onSelectionChange={setSizeValues}
-            >
+              placeholder="Select Sizes Guide" fullWidth>
               {sizeArrays.map((sizeArray) => (
-                <SelectItem key={sizeArray.key}>
+                <SelectItem key={sizeArray.key} textValue={sizeArray.label}>
                   {sizeArray.label}
                 </SelectItem>
               ))}
             </Select>
+            {errors.productSize && <span className="text-tiny text-red-500">This field is required</span>}
+            </div>
+            <div>
+            <Select 
+              label="Select Size Guide"
+              labelPlacement="outside" 
+              variant="faded" radius="sm" 
+              {...register("sizeGuide", { required: true })} 
+              onSelectionChange={setSelectSizeGuide}
+              placeholder="Select Size Guide" fullWidth>
+              {sizeGuideInfo.map((item) => (
+                <SelectItem key={item.imgUrl} textValue={item.name}>
+                  {item.name}
+                </SelectItem>
+              ))}
+            </Select>
+            {errors.sizeGuide && <span className="text-tiny text-red-500">This field is required</span>}
+            </div>
+            <div>
+            <Select {...register("gender", { required: true })} 
+              label="Select Gender" 
+              labelPlacement="outside" 
+              variant="faded" radius="sm" 
+              placeholder="Select a Gender" fullWidth>
+              {genderArray.map((gender) => (
+                <SelectItem className="text-medium" key={gender.key} textValue={gender.label}>
+                  {gender.label}
+                </SelectItem>
+              ))}
+            </Select>
+            {errors.gender && <span className="text-tiny text-red-500">This field is required</span>}
+          </div>
           </div>
           </div>
         </div>
 
         {/* Pricing Section */}
-        <div className="border-1 border-gray-200 rounded-md">
-          <div className="px-4 border-b-1 gap-2 py-2 flex flex-col md:flex-row items-center justify-between">
-            <h1>Pricing</h1>
-            <p className="text-xs text-gray-500">Enter the product pricing details</p>
+        <div className="border-1 border-gray-200 rounded-md overflow-hidden">
+          <div className="px-4 border-b-1 gap-2 py-2 bg-gray-700 flex flex-col md:flex-row items-center justify-between">
+            <h1 className="text-white">Pricing</h1>
+            <p className="text-xs text-white">Enter the product pricing details</p>
           </div>
-          <div className="p-4 space-y-4">
+          <div className="grid grid-cols-2 gap-4 p-4">
+            <div>
             <Input
               type="number"
-              label="Price"
+              label="Original Price"
               variant="faded" 
               placeholder="0.00"
+              min={1}
+              defaultValue={productData.originPrice}
               labelPlacement="outside"
-              
-              defaultValue={productData?.price}
-              {...register("price", { required: true })}
+              {...register("originalPrice", { required: true })}
               startContent={
                 <div className="pointer-events-none flex items-center">
-                  <span className="text-default-400 text-small">Tk.</span>
+                  <span className="text-default-400 text-small">৳</span>
                 </div>
               }
             />
-            {errors.price && <span className="text-tiny text-red-500">This field is required</span>}
-              
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-              <Input type="number" defaultValue={productData?.discount} endContent={<FaPercent />} {...register("discount", { required: true })} labelPlacement="outside" variant="faded" radius="sm" label="Discount Amount" placeholder="0.00" fullWidth />
-              {errors.discount && <span className="text-tiny text-red-500">This field is required</span>}
-              </div>
-              <div>
-              <Select {...register("discountType", { required: true })} label="Discount Type" labelPlacement="outside" variant="faded" radius="sm" placeholder="Select a Discount Type" fullWidth>
-                {discountTypes.map((discount) => (
-                  <SelectItem key={discount.key} value={discount.key}>
-                    {discount.label}
-                  </SelectItem>
-                ))}
-              </Select>
-              {errors.discountType && <span className="text-tiny text-red-500">This field is required</span>}
-              </div>
+            {errors.originalPrice && <span className="text-tiny text-red-500">This field is required</span>}
+            </div>
+            <div>
+              <Input 
+                type="number" 
+                min={1}
+                defaultValue={productData.price}
+                startContent={
+                <div className="pointer-events-none flex items-center">
+                  <span className="text-default-400 text-small">৳</span>
+                </div>
+                } 
+                {...register("sellingPrice", { required: true })} 
+                labelPlacement="outside" 
+                variant="faded" radius="sm" 
+                label="Selling Price" placeholder="0.00" fullWidth />
+              {errors.sellingPrice && <span className="text-tiny text-red-500">This field is required</span>}
             </div>
           </div>
         </div>
         
         {/* Inventory Section */}
-        <div className="border-1 border-gray-200 rounded-md">
-          <div className="px-4 border-b-1 gap-2 py-2 flex flex-col md:flex-row items-center justify-between">
-            <h1>Inventory</h1>
-            <p className="text-xs text-gray-500">Enter the inventory details</p>
+        <div className="border-1 border-gray-200 rounded-md overflow-hidden">
+          <div className="px-4 border-b-1 gap-2 bg-gray-700 py-2 flex flex-col md:flex-row items-center justify-between">
+            <h1 className="text-white">Inventory</h1>
+            <p className="text-xs text-white">Enter the inventory details</p>
           </div>
           <div className="p-4 grid md:grid-cols-2 grid-cols-1 gap-4">
             <div>
             <Input
               type="number"
+              min={1}
               label="Prodcut Code"
               variant="faded" 
-              defaultValue={productData?.sku}
+              defaultValue={productData.sku}
               placeholder="12345678"
               labelPlacement="outside"
               {...register("sku", { required: true })}
@@ -318,7 +409,8 @@ const UpdateProduct = ({ params }) => {
               type="number"
               label="Prodcut Stock Quantity"
               variant="faded" 
-              defaultValue={productData?.quantity}
+              defaultValue={productData.quantity}
+              min={1}
               placeholder="Type product quantity"
               labelPlacement="outside"
               {...register("quantity", { required: true })}
@@ -329,10 +421,10 @@ const UpdateProduct = ({ params }) => {
         </div>
 
         {/* Description Section */}
-        <div className="border-1 border-gray-200 rounded-md">
-          <div className="px-4 border-b-1 gap-2 py-2 flex flex-col md:flex-row items-center justify-between">
-            <h1>Product Description</h1>
-            <p className="text-xs text-gray-500">Type product details</p>
+        <div className="border-1 border-gray-200 overflow-hidden rounded-md">
+        <div className="px-4 border-b-1 gap-2 bg-gray-700 py-2 flex flex-col md:flex-row items-center justify-between">
+            <h1 className="text-white">Product Description</h1>
+            <p className="text-xs text-white">Type product details</p>
           </div>
           <div className="p-4">
             <div>
@@ -340,8 +432,8 @@ const UpdateProduct = ({ params }) => {
                 type="description"
                 label="Description"
                 variant="faded" 
-                defaultValue={productData?.description}
-                placeholder="Type product quantity"
+                defaultValue={productData.description}
+                placeholder="Write about your product"
                 labelPlacement="outside"
                 {...register("description", { required: true })}
               />
@@ -350,54 +442,54 @@ const UpdateProduct = ({ params }) => {
           </div>
         </div>
 
-        <Button isLoading={loading} disabled={loading} type="submit" color="primary">Add Product</Button>
+        {/* Product Tag Section */}
+        <div className="border-1 border-gray-200 overflow-hidden rounded-md">
+        <div className="px-4 border-b-1 gap-2 bg-gray-700 py-2 flex flex-col md:flex-row items-center justify-between">
+            <h1 className="text-white">Product Tag</h1>
+            <p className="text-xs text-white">Type Product Tag for SEO</p>
+          </div>
+          <div className="p-4">
+          <div>
+            <div>
+              <h1 className="mb-2">Add Product Tag Here</h1>
+              <div className="flex justify-center gap-3">
+              <Input
+              radius="sm"
+              type="text"
+              variant="bordered"
+              placeholder="Example.. PoloShirt, T-Shirt, Tor"
+              value={productTag}
+              onValueChange={setProductTag}
+              errorMessage="Please Type Stayle Name"
+              className="flex-1"
+              />
+              <Button startContent={<IoIosAddCircle size={20} />} onPress={handleAddProductTag} color="primary">
+                Add
+              </Button> 
+              </div>
+            </div>
+          </div>
+          <Card className="shadow-none border-1 border-gray-300">
+          <CardBody className="p-6 min-h-60 flex flex-col gap-6">
+            <div className="flex flex-wrap gap-2">
+            {newProductTag.map((name, index) => (
+              <Chip key={index} onClose={() => handleDeleteProductTag(name)} variant="flat">
+              {name}
+              </Chip>
+            ))}
+            </div>
+          </CardBody>
+        </Card>
+          </div>
         </div>
+
+        <Button isLoading={loading} disabled={loading} type="submit" color="primary">Add Product</Button>
+      </div>
       </form>
     </section>
   );
 }
 
-// Component for product image selection input
-const ImageSelectInput = ({ handleImageSelect }) => {
-  return (
-    <div className="flex items-center justify-center w-full">
-      <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-44 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-          <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-          </svg>
-          <div className="mb-2 text-tiny text-gray-500">
-            <p className="font-semibold">Click to upload</p>
-            <p>or drag and drop</p>
-          </div>
-        </div>
-        <input 
-        id="dropzone-file" 
-        accept="image/png, image/jpg, image/jpeg"
-        onChange={handleImageSelect} multiple  
-        type="file" className="hidden" />
-      </label>
-    </div>
-  );
-}
 
-// Component for displaying selected image previews with replace and remove buttons
-const SelectedImagePreview = ({ image, onReplace, onRemove }) => {
-  const imageUrl = URL.createObjectURL(image);
-  return (
-    <div className="relative overflow-hidden rounded-md flex items-center justify-center w-full group">
-       <Image radius="md" src={imageUrl} alt={image.name} className="w-full border-1 h-44 object-contain" />
-      <div className="absolute rounded-md top-0 right-0 z-10 backdrop-grayscale-0 bg-gray-900/70 border-1 w-full h-full flex flex-col items-center justify-center space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button size="sm" color="primary">
-          Replace
-          <input type="file" className="hidden" onChange={onReplace} />
-        </Button>
-        <Button size="sm" color="danger" onClick={onRemove}>
-          Remove
-        </Button>
-      </div>
-    </div>
-  );
-};
 
-export default UpdateProduct;
+export default UpdtaeProdcut;

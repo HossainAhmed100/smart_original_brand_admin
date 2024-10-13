@@ -8,10 +8,12 @@ import { FaTrashAlt } from "react-icons/fa";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { storage } from "@/firebase/firebase.config";
 import Swal from "sweetalert2";
+import { FaAngleLeft } from "react-icons/fa6";
+import { useRouter } from "next/navigation";
 
-function ManageSizeguide() {
+function ManageProductSizeGuide() {
   useEffect(() => {
-    document.title = 'Manage Size Guide | Admin Dashboard | Smart Original Brand Online Shop';
+    document.title = 'Product Size Guide | Admin Dashboard | Smart Original Brand Online Shop';
   }, []);
   const [sizeGuideName, setSizeGuideName] = useState("");
   const [preview, setPreview] = useState('');
@@ -19,6 +21,7 @@ function ManageSizeguide() {
   const [selectedSizeGuideImages, setSelectedSizeGuideImages] = useState(null);
   const [loadingUplaodSizeGuide, setLoadingUplaodSizeGuide] = useState(false);
   const axiosSecure = useAxiosSecure();
+  const router = useRouter();
 
   const {data: sizeGuideInfo = [], refetch} = useQuery({
     queryKey: ["sizeGuideInfo"],
@@ -147,6 +150,11 @@ function ManageSizeguide() {
 
   return (
     <section>
+      <div className="mb-6">
+        <Button color="default" variant="bordered" onClick={() => router.back()} startContent={<FaAngleLeft size={20}/>}>
+          Go Back
+        </Button>
+      </div>
       <div className="border-1 border-gray-200 rounded-md">
         <div className="px-4 border-b-1 gap-2 py-2 flex flex-col md:flex-row items-center justify-between">
             <div><span>Size Guide :</span> <span className="font-medium text-tiny">JPG (MAX. 1024x300px)</span></div>
@@ -216,4 +224,4 @@ function ManageSizeguide() {
   )
 }
 
-export default ManageSizeguide
+export default ManageProductSizeGuide

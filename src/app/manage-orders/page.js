@@ -5,9 +5,13 @@ import { auth } from "@/firebase/firebase.config";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
 import { useQuery } from "@tanstack/react-query"
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useEffect } from "react";
 
 
 function ManageOrders() {
+  useEffect(() => {
+    document.title = 'Manage User Orders | Admin Dashboard | Smart Original Brand Online Shop';
+  }, []);
   const [user] = useAuthState(auth);
   const axiosSecure = useAxiosSecure();
   const {data: manageOrders = [], isLoading} = useQuery({

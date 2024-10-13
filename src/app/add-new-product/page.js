@@ -13,7 +13,7 @@ import toast from "react-hot-toast";
 
 function AddProductPage() {
   useEffect(() => {
-    document.title = 'Add New Product | Admin Dashboard | Zero Exclusive Online Shop';
+    document.title = 'Add New Product | Admin Dashboard | Smart Original Brand Online Shop';
   }, []);
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
   const [loading, setLoading] = useState(false);
@@ -183,6 +183,164 @@ function AddProductPage() {
     {key: "xl", label: "XL"},
     {key: "xxl", label: "XXL"},
     {key: "3xl", label: "3XL"},
+  ];
+
+  const productTypeArr = [
+    {
+      id: 1,
+      label: "Long Sleeve",
+      path: "long-sleeve",
+    },
+    {
+      id: 2,
+      label: "V-Neck",
+      path: "v-neck",
+    },
+    {
+      id: 3,
+      label: "Relaxed Fit",
+      path: "relaxed-fit",
+    },
+    {
+      id: 4,
+      label: "Athletic Fit",
+      path: "athletic-fit",
+    },
+    {
+      id: 5,
+      label: "Special Interest T-Shirt",
+      path: "special-interest",
+    },
+    {
+      id: 6,
+      label: "Formal Shirt",
+      path: "formal",
+    },
+    {
+      id: 7,
+      label: "Casual Shirt",
+      path: "casual",
+    },
+    {
+      id: 8,
+      label: "Half Sleeve Shirt",
+      path: "half-sleeve",
+    },
+    {
+      id: 9,
+      label: "Full Sleeve Shirt",
+      path: "full-sleeve",
+    },
+    {
+      id: 10,
+      label: "Printed Shirt",
+      path: "printed",
+    },
+    {
+      id: 11,
+      label: "Solid Shirt",
+      path: "solid",
+    },
+    {
+      id: 12,
+      label: "Club Shirt",
+      path: "club",
+    },
+    {
+      id: 13,
+      label: "Men's Polo",
+      path: "mens-polo",
+    },
+    {
+      id: 14,
+      label: "Women's Polo",
+      path: "womens-polo",
+    },
+    {
+      id: 15,
+      label: "Classic Fit Polo",
+      path: "classic-fit",
+    },
+    {
+      id: 16,
+      label: "Long Sleeve Polo",
+      path: "long-sleeve-polo",
+    },
+    {
+      id: 17,
+      label: "Pocket Polos",
+      path: "pocket-polos",
+    },
+    {
+      id: 18,
+      label: "Jeans",
+      path: "jeans",
+    },
+    {
+      id: 19,
+      label: "Chinos",
+      path: "chinos",
+    },
+    {
+      id: 20,
+      label: "Formal Bottom",
+      path: "formal-bottom",
+    },
+    {
+      id: 21,
+      label: "Joggers",
+      path: "joggers",
+    },
+    {
+      id: 22,
+      label: "Cargo",
+      path: "cargo",
+    },
+    {
+      id: 23,
+      label: "Shorts",
+      path: "shorts",
+    },
+    {
+      id: 24,
+      label: "Pajama",
+      path: "pajama",
+    },
+    {
+      id: 25,
+      label: "Gurkha Pants",
+      path: "gurkha-pants",
+    },
+    {
+      id: 26,
+      label: "Blazer",
+      path: "blazer",
+    },
+    {
+      id: 27,
+      label: "Jacket",
+      path: "jacket",
+    },
+    {
+      id: 28,
+      label: "Sweater",
+      path: "sweater",
+    },
+    {
+      id: 29,
+      label: "Sweatshirt",
+      path: "sweatshirt",
+    },
+    {
+      id: 30,
+      label: "Hoodie",
+      path: "hoodie",
+    },
+    {
+      id: 31,
+      label: "T-Shirt (Woman)",
+      path: "t-shirt",
+    }
   ];
 
   const genderArray = [

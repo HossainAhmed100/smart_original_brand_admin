@@ -1,21 +1,20 @@
-import { FaChartPie } from "react-icons/fa6";
-import { FaUser } from "react-icons/fa";
+import { FaChartPie, FaBloggerB } from "react-icons/fa6";
+import { FaUsers } from "react-icons/fa";
 import { MdAddBusiness, MdOutlineManageSearch } from "react-icons/md";
-import { PiResize } from "react-icons/pi";
-import { FiPackage, FiLayout } from "react-icons/fi";
+import { FiPackage } from "react-icons/fi";
 import { USER_ROLE } from "@/constants/role";
 import { TbCategoryPlus } from "react-icons/tb";
 
 export const drawerItems = (role) => {
    const roleMenus = [];
 
-   const defaultMenus = [
-      {
-         title: 'My Account',
-         path: `${role}/profile`,
-         icon: FaUser,
-      },
-   ];
+   // const defaultMenus = [
+   //    {
+   //       title: 'My Account',
+   //       path: `${role}/profile`,
+   //       icon: FaUser,
+   //    },
+   // ];
 
    switch (role) {
       case USER_ROLE.ADMIN:
@@ -41,19 +40,19 @@ export const drawerItems = (role) => {
                icon: MdOutlineManageSearch,
             },
             {
-               title: 'Manage Size Guide',
-               path: `/manage-sizeguide`,
-               icon: PiResize,
-            },
-            {
-               title: 'Manage Category',
-               path: `/manage-category`,
+               title: 'Manage Layout',
+               path: `/manage-layout`,
                icon: TbCategoryPlus,
             },
             {
-               title: 'Manage Layout',
-               path: `/manage-layout`,
-               icon: FiLayout,
+               title: 'Manage Blogs',
+               path: `/manage-blogs`,
+               icon: FaBloggerB,
+            },
+            {
+               title: 'Manage Users',
+               path: `/manage-users`,
+               icon: FaUsers,
             }
          );
          break;
@@ -72,5 +71,5 @@ export const drawerItems = (role) => {
          break;
    }
 
-   return [...roleMenus, ...defaultMenus];
+   return [...roleMenus];
 };

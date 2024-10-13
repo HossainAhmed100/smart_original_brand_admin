@@ -9,10 +9,12 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage
 import { storage } from "@/firebase/firebase.config";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
+import { FaAngleLeft } from "react-icons/fa6";
+import { useRouter } from "next/navigation";
 
-function ManageCategory() {
+function ManageProductCategory() {
     useEffect(() => {
-        document.title = 'Manage Category | Admin Dashboard | Smart Original Brand Online Shop';
+        document.title = 'Product Category | Admin Dashboard | Smart Original Brand Online Shop';
       }, []);
     const [categoryName, setCategoryName] = useState("");
     const [preview, setPreview] = useState('');
@@ -20,6 +22,7 @@ function ManageCategory() {
     const [selectedCategoryImages, setSelectedCategoryImages] = useState(null);
     const [loadingCategory, setLoadingCategory] = useState(false);
     const axiosSecure = useAxiosSecure();
+    const router = useRouter();
 
     const {data: categoryInfo = [], refetch} = useQuery({
     queryKey: ["categoryInfo"],
@@ -140,6 +143,11 @@ function ManageCategory() {
     };
     return (
     <section>
+    <div className="mb-6">
+        <Button color="default" variant="bordered" onClick={() => router.back()} startContent={<FaAngleLeft size={20}/>}>
+          Go Back
+        </Button>
+      </div>
         <div className="border-1 border-gray-200 rounded-md">
         <div className="px-4 border-b-1 gap-2 py-2 flex flex-col md:flex-row items-center justify-between">
             <div><span>Category :</span> <span className="font-medium text-tiny">PNJ (MAX. Size 300px300px)</span></div>
@@ -210,4 +218,4 @@ function ManageCategory() {
     )
 }
 
-export default ManageCategory
+export default ManageProductCategory

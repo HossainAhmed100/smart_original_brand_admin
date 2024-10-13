@@ -19,13 +19,13 @@ function UserOrdersCard({item}) {
         {
           myCart.map(item => {
             return (
-              <div className="flex border-1 rounded-lg border-gray-200 items-center justify-start" key={item.itemKey}>
+              <div className="flex border-1 rounded-lg border-gray-200 items-center justify-start" key={item.slug}>
                 <div className="px-4  border-r-1">
-                <Image src={item.thumbnail} alt={item.title} width={80} height={80}/>
+                <Image src={item.thumbImage[0]} alt={item.name} width={80} height={80}/>
                 </div>
                 <div className="px-4">
-                  <h1>{item.title}</h1>
-                  <strong>Tk.{item.sellingPrice}</strong>
+                  <h1>{item.name}</h1>
+                  <strong>Tk.{item.price}</strong>
                 </div>
               </div>
             )

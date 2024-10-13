@@ -7,7 +7,6 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { BsCopy } from 'react-icons/bs';
 import { FaCalendar } from 'react-icons/fa';
 
 const OrderDetails = ({ params }) => {
@@ -26,7 +25,7 @@ const OrderDetails = ({ params }) => {
 
   useEffect(() => {
     const charger = ordersInfo?.deliveryChargeDetails?.deliveryCost || 0;
-    const total = ordersInfo?.myCart.reduce((acc, item) => acc + item.sellingPrice * item.purchaseQuantity, 0) || 0;
+    const total = ordersInfo?.myCart.reduce((acc, item) => acc + item.price * item.quantityPurchase, 0) || 0;
     setTotalPayment(total + charger);
   }, [ordersInfo]);
 
@@ -76,11 +75,11 @@ const OrderDetails = ({ params }) => {
                   <div className="border-1 rounded-lg border-gray-200" key={item.itemKey}>
                   <div className="flex border-b-1 items-center justify-start">
                     <div className="px-4  border-r-1">
-                    <Image src={item.thumbnail} alt={item.title} width={80} height={80}/>
+                    <Image src={item.thumbImage[0]} alt={item.name} width={80} height={80}/>
                     </div>
                     <div className="px-4">
                       <h1>
-                      {item.title} 
+                      {item.name} 
                       <Link
                         isExternal
                         href={`http://zeroexclusive.com/all-products/${item?.productId}`}
@@ -90,12 +89,12 @@ const OrderDetails = ({ params }) => {
                         View Product
                       </Link>
                       </h1>
-                      <strong className='text-2xl'>Tk.{item.sellingPrice}</strong>
+                      <strong className='text-2xl'>Tk.{item.price}</strong>
                     </div>
                   </div>
                   <div className='p-2 flex flex-col'>
                     <div className='p-2 flex items-center justify-between'>
-                        <span>Quantity:</span> <Chip>{item.purchaseQuantity} PCS</Chip>
+                        <span>Quantity:</span> <Chip>{item.quantityPurchase} PCS</Chip>
                     </div>
                     <div><Divider /></div>
                     <div className='p-2 flex items-center justify-between'>
@@ -127,7 +126,7 @@ const OrderDetails = ({ params }) => {
               <div className='space-y-2'>
                 {myCart.map((item, index) => (
                   <div key={index} className='flex items-center justify-between'>
-                    <span>{item.title} x{item.purchaseQuantity}:</span> <strong>Tk.{item.sellingPrice * item.purchaseQuantity}</strong>
+                    <span>{item.name} x{item.quantityPurchase}:</span> <strong>Tk.{item.price * item.quantityPurchase}</strong>
                   </div>
                 ))}
                 <div className='flex items-center justify-between'>

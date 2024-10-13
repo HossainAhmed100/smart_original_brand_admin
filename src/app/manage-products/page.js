@@ -24,13 +24,14 @@ import {ChevronDownIcon} from "./ChevronDownIcon";
 import {capitalize} from "./utils";
 import { useQuery } from "@tanstack/react-query";
 import { FiPlus } from "react-icons/fi";
-import { RiDeleteBinLine } from "react-icons/ri";
+import { RiDeleteBinLine,RiEdit2Fill } from "react-icons/ri";
 import { LuEye } from "react-icons/lu";
 import Swal from "sweetalert2";
 import useAxiosPublic from "@/hooks/useAxiosPublic";
 import toast from "react-hot-toast";
 import { storage } from "@/firebase/firebase.config";
 import { ref, deleteObject } from "firebase/storage";
+import { useRouter } from "next/navigation";
 
 
 const columns = [
@@ -55,13 +56,14 @@ const INITIAL_VISIBLE_COLUMNS = ["thumbImage", "name", "originPrice", "price", "
 
 export default function ManageProductsPage() {
   useEffect(() => {
-    document.title = 'Manage Products | Admin Dashbaord | Zero Exclusive Online Shop';
+    document.title = 'Manage Products | Admin Dashbaord | Smart Original Brand Online Shop';
   }, []);
   const [filterValue, setFilterValue] = useState("");
   const [visibleColumns, setVisibleColumns] = useState(new Set(INITIAL_VISIBLE_COLUMNS));
   const [statusFilter, setStatusFilter] = useState("all");
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const axiosPublic = useAxiosPublic();
+  const router = useRouter();
   const [sortDescriptor, setSortDescriptor] = useState({
     column: "price",
     direction: "ascending",
@@ -121,6 +123,10 @@ export default function ManageProductsPage() {
       }
     });
   }, [axiosPublic, refetch]);
+
+  const handleUpdateProduct = (_id) => {
+    router.push(`/manage-products/${_id}`);
+  }
   
   const [page, setPage] = useState(1);
 
@@ -218,7 +224,12 @@ export default function ManageProductsPage() {
         );
       case "actions":
         return (
-          <div className="flex justify-center items-center">
+          <div className="flex justify-center gap-2 items-center">
+          <Tooltip color="default" content="Update">
+            <span onClick={() => handleUpdateProduct(item._id)} className="text-lg text-black cursor-pointer active:opacity-50">
+              <RiEdit2Fill />
+            </span>
+          </Tooltip>
           <Tooltip color="danger" content="Delete">
             <span onClick={() => handleDeleteProduct(item)} className="text-lg text-danger cursor-pointer active:opacity-50">
               <RiDeleteBinLine />

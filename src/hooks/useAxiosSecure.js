@@ -6,7 +6,7 @@ import { auth } from "../firebase/firebase.config";
 import { useRouter } from "next/navigation";
 
 const axiosSecure = axios.create({
-    baseURL: 'https://smartserver.smartoriginalbrand.com/api/'
+    baseURL: 'http://localhost:5000/api/'
 })
 
 const useAxiosSecure = () => {
