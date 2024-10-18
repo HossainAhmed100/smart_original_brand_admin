@@ -1,35 +1,24 @@
 'use client'
-import React, { useEffect, useState } from 'react';
-import axios from 'axios'; // Make sure to import axios
+import React from 'react';
 import { Button, Card, CardBody, CardFooter, CardHeader, Divider } from '@nextui-org/react';
-import Image from 'next/image';
 import DateConverter from '@/utils/dateConverter';
+import useAxiosPublic from '@/hooks/useAxiosPublic';
+import { useQuery } from '@tanstack/react-query';
 
 
 function MailBox() {
-  const [supoortInbox, setSupoortInbox] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const axiosPublic = useAxiosPublic();
 
-  useEffect(() => {
-    const fetchSupportInbox = async () => {
-      try {
-        const res = await axios.get('http://localhost:5001/api/layout/contact');
-        setSupoortInbox(res.data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const {data: supoortInbox = [], isLoading} = useQuery({
+    queryKey: ["supoortInbox"],
+    queryFn: async () => {
+      const res = await axiosPublic.get('/layout/contact');
+      return res.data;
+    }
+  })
 
-    fetchSupportInbox();
-  }, []); // Empty dependency array means this runs once on component mount
+  if (isLoading) return <div>Loading...</div>;
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-
-  console.log(supoortInbox);
   
   return (
     <div>
@@ -37,7 +26,7 @@ function MailBox() {
       <div>
       <Divider/>
       </div>
-      <div className='py-4 grid grid-flow-col grid-cols-4 gap-3'>
+      <div className='py-4 grid xl:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-3'>
       {supoortInbox && supoortInbox.map((type) => (
         <MessageCrad key={type._id} data={type} /> 
       ))}
@@ -50,7 +39,7 @@ function MailBox() {
 const MessageCrad = ({data}) => {
   const {createdAt, fullName, email, message} = data;
   return (
-    <Card className="max-w-[400px] shadow-md">
+    <Card className="max-w-[400px] border shadow-md">
       <CardHeader className="flex gap-3">
         <div className="flex flex-col">
           <p className="text-md">{fullName}</p>

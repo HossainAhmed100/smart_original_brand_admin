@@ -6,9 +6,12 @@
 .pnp.js
 .yarn/install-state.gz
 
+/public
+
 # testing
 /coverage
-.zip
+/.zip
+/smart_original_brand_admin.zip
 
 # next.js
 /.next/

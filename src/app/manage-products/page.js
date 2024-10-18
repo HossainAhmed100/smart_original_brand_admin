@@ -125,8 +125,9 @@ export default function ManageProductsPage() {
   }, [axiosPublic, refetch]);
 
   const handleUpdateProduct = (_id) => {
-    // router.push(`/manage-products/${_id}`);
-    toast.error("This Function is under construction!")
+    console.log("🚀 ~ handleUpdateProduct ~ _id:", _id)
+    router.push(`/manage-products/${_id}`);
+    // toast.error("This Function is under construction!")
   }
   
   const [page, setPage] = useState(1);

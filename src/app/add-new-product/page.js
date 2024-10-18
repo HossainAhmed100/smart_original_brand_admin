@@ -10,6 +10,7 @@ import useAxiosPublic from "@/hooks/useAxiosPublic";
 import { useQuery } from "@tanstack/react-query";
 import { IoIosAddCircle } from "react-icons/io";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 function AddProductPage() {
   useEffect(() => {
@@ -28,6 +29,7 @@ function AddProductPage() {
   const [newProductTag, setNewProductTag] = useState([]);
   const [selectedColorImages, setSelectedColorImages] = useState(null);
   const [loadingUplaodVariation, setLoadingUplaodVariation] = useState(false);
+  const router = useRouter();
   const axiosPublic = useAxiosPublic();
 
   const {data: productTypesInfo = []} = useQuery({
@@ -69,6 +71,7 @@ function AddProductPage() {
     return productTypeArr.find((product) => product.id === ids);
   }; 
   const onSubmit = async (data) => {
+    console.log("🚀 ~ onSubmit ~ data:", data)
     setLoading(true);
     try {
         const newFirebaseImages = [];
@@ -93,7 +96,11 @@ function AddProductPage() {
   // Function to handle product data upload to the server
   const handleProductUpload = async (data, images) => {
     setLoading(true);
-    const { title, brand, category, description, gender } = data;
+    const timestamp = Date.now();
+    const { title, category, description } = data;
+    const brandData = data.brand ? data.brand : "Smart Original";
+    const genderData = data.gender ? data.gender : "male";
+    const sizeGuideData = data.sizeGuide ? data.sizeGuide : "none";
     const slug = generateSlug(title);
     const path = data.productType;
     const originalPrice = parseFloat(data.originalPrice);
@@ -108,13 +115,14 @@ function AddProductPage() {
       category,
       type: path,
       name: title,
-      gender,
+      gender: genderData,
       new: false,
       sale: false,
       rate: 5,
       price: sellingPrice,
       originPrice: originalPrice,
-      brand,
+      brand: brandData,
+      sizeGuide: sizeGuideData,
       sold: 0,
       quantity,
       quantityPurchase: 0,
@@ -126,7 +134,7 @@ function AddProductPage() {
       action: "quick shop",
       slug,
       tag,
-      sku
+      sku: timestamp
     };
     console.log(newProduct)
     try {
@@ -141,6 +149,7 @@ function AddProductPage() {
           icon: "success",
           title: "Product Added Successfully!",
         })
+        router.push(`/manage-products`);
       } else {
         Swal.fire({
           icon: "warning",
@@ -190,6 +199,7 @@ function AddProductPage() {
   };
 
   const sizeArrays = [
+    {key: "n/a", label: "N/A"},
     {key: "xs", label: "XS"},
     {key: "s", label: "S"},
     {key: "m", label: "M"},
@@ -343,12 +353,11 @@ function AddProductPage() {
           {errors.title && <span className="text-tiny text-red-500">This field is required</span>}
           <div className="grid grid-cols-3 gap-4">
             <div>
-            <Input {...register("brand", { required: true })} 
+            <Input {...register("brand")} 
             labelPlacement="outside" 
             variant="faded" radius="sm" 
-            label="Product Brand" 
+            label="Product Brand (optional)" 
             placeholder="Type Brnad name" fullWidth />
-            {errors.brand && <span className="text-tiny text-red-500">This field is required</span>}
             </div>
             <div>
             <Select {...register("category", { required: true })} 
@@ -483,10 +492,10 @@ function AddProductPage() {
             </div>
             <div>
             <Select 
-              label="Select Size Guide"
+              label="Select Size Guide (optional)" 
               labelPlacement="outside" 
               variant="faded" radius="sm" 
-              {...register("sizeGuide", { required: true })} 
+              {...register("sizeGuide")} 
               onSelectionChange={setSelectSizeGuide}
               placeholder="Select Size Guide" fullWidth>
               {sizeGuideInfo.map((item) => (
@@ -495,11 +504,10 @@ function AddProductPage() {
                 </SelectItem>
               ))}
             </Select>
-            {errors.sizeGuide && <span className="text-tiny text-red-500">This field is required</span>}
             </div>
             <div>
-            <Select {...register("gender", { required: true })} 
-              label="Select Gender" 
+            <Select {...register("gender")} 
+              label="Select Gender (optional)" 
               labelPlacement="outside" 
               variant="faded" radius="sm" 
               placeholder="Select a Gender" fullWidth>
@@ -568,13 +576,12 @@ function AddProductPage() {
             <Input
               type="number"
               min={1}
-              label="Prodcut Code"
+              label="Prodcut Code (optional)" 
               variant="faded" 
               placeholder="12345678"
               labelPlacement="outside"
-              {...register("sku", { required: true })}
+              {...register("sku")}
             />
-            {errors.sku && <span className="text-tiny text-red-500">This field is required</span>}
             </div>
             <div>
             <Input
@@ -621,7 +628,7 @@ function AddProductPage() {
           <div className="p-4">
           <div>
             <div>
-              <h1 className="mb-2">Add Product Tag Here</h1>
+              <h1 className="mb-2">Add Product Tag Here (optional)</h1>
               <div className="flex justify-center gap-3">
               <Input
               radius="sm"
