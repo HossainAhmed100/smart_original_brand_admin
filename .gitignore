@@ -10,8 +10,6 @@
 
 # testing
 /coverage
-/.zip
-/smart_original_brand_admin.zip
 
 # next.js
 /.next/
