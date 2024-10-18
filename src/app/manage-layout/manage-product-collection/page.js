@@ -20,7 +20,7 @@ function ManageProductCollection() {
   const {isOpen, onOpen, onOpenChange} = useDisclosure();
   const [selectedCollectionImages, setSelectedCollectionImages] = useState(null);
   const [loadingCollection, setLoadingCollection] = useState(false);
-  const [productType, setProductType] = useState(new Set([]));
+  const [productType, setProductType] = useState(0);
   const axiosSecure = useAxiosSecure();
   const router = useRouter();
 
@@ -220,7 +220,8 @@ function ManageProductCollection() {
   };
   
   const getProductTypeById = (id) => {
-    return productTypeArr.find((product) => product.id === id);
+    const ids = parseInt(id)
+    return productTypeArr.find((product) => product.id === ids);
   };
       
   const addNewCollection = async (onClose) => {
@@ -237,7 +238,7 @@ function ManageProductCollection() {
       const uploadedImage = await uploadImageAsync(selectedCollectionImages);
 
       const key = Math.floor(100000 + Math.random() * 900000).toString();
-      const {label, path} = getProductTypeById(2);
+      const {label, path} = getProductTypeById(productType);
       const newCollection = {
           key: key,
           label: label,

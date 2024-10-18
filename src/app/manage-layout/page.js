@@ -1,18 +1,18 @@
 'use client'
 import { Button } from "@nextui-org/react";
 import Link from "next/link";
-import { BiSolidCollection, BiSolidChalkboard, BiLogoInstagram } from "react-icons/bi";
-import { FaAngleRight, FaMoneyBillWave } from "react-icons/fa6";
+import { BiSolidCollection, BiSolidChalkboard, BiLogoInstagram, BiSolidOffer } from "react-icons/bi";
+import { FaAngleRight, FaMoneyBillWave, FaTag } from "react-icons/fa6";
 import { TbResize } from "react-icons/tb";
 import { MdCategory } from "react-icons/md";
 import { useEffect } from "react";
 
 const pathList = [
   {
-    label: "Website Banners",
-    path: "/manage-layout/manage-banners",
-    contect: "Add or Delete Your Web Banners",
-    icon: BiSolidChalkboard,
+    label: "Popup Promo Offers",
+    path: "/manage-layout/manage-web-promo-offers",
+    contect: "Manage Website Banner Popup Promo Offers",
+    icon: BiSolidOffer,
     iconSize: 40,
     iconColor: "gray-600",
   },
@@ -41,6 +41,14 @@ const pathList = [
     iconColor: "gray-600",
   },
   {
+    label: "Product Type",
+    path: "/manage-layout/manage-product-types",
+    contect: "Manage your product types",
+    icon: FaTag,
+    iconSize: 40,
+    iconColor: "gray-600",
+  },
+  {
     label: "Delivery Charge",
     path: "/manage-layout/manage-deliveryCharge",
     contect: "Manage delivery charge for users",
@@ -55,7 +63,7 @@ const pathList = [
     icon: BiLogoInstagram,
     iconSize: 40,
     iconColor: "gray-600",
-  },
+  }
 ]
 
 function ManageLayout() {
@@ -63,7 +71,7 @@ function ManageLayout() {
     document.title = 'Manage Website Layout | Admin Dashboard | Smart Original Brand Online Shop';
   }, []);
   return (
-    <div className="grid grid-cols-5 gap-4">
+    <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4">
       {pathList.map((item, index) => (
         <div key={index} className="rounded-md p-4 border-1 space-y-2">
           <div className="border-1 border-gray-200 bg-gray-100 rounded-lg p-10 flex items-center justify-center">

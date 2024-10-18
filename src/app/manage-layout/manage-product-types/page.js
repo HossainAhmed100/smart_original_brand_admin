@@ -8,57 +8,57 @@ import { Trash } from "@phosphor-icons/react";
 import { FaAngleLeft } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-function ManageDeliveryCharge() {
+function ManageProductTypes() {
     useEffect(() => {
         document.title = 'Delivery Charges | Admin Dashboard | Smart Original Brand Online Shop';
       }, []);
   const [isLoading, setIsLoading] = useState(false);
-  const [deliveryCost, setDeliveryCost] = useState('');
-  const [deliveryArea, setDeliveryArea] = useState("");
+  const [productType, setProductType] = useState("");
   const axiosSecure = useAxiosSecure();
   const router = useRouter();
   
-  const {data: deliveryChargeInfo = [], refetch: fetchDeliveryCharge} = useQuery({
-    queryKey: ["deliveryChargeInfo"],
+  const {data: productTypesInfo = [], refetch: fetchProductTypes} = useQuery({
+    queryKey: ["productTypesInfo"],
     queryFn: async () => {
-      const res = await axiosSecure.get('/layout/deliveryCharge');
+      const res = await axiosSecure.get('/layout/productTypes');
       return res.data;
     },
   })
 
   const handleDeleteDelivery = async (id) => {
     try {
-      await axiosSecure.delete(`/layout/deliveryCharge/${id}`)
-      console.log('Delivery Charge successfully:', id);
-      toast.success('Deleted successfully');
-      fetchDeliveryCharge()
+      await axiosSecure.delete(`/layout/productTypes/${id}`)
+      toast.success('Product Type deleted successfully');
+      fetchProductTypes()
     } catch (e) {
-      console.error('Error deleting product:', e);
-      toast.error('Error deleting product');
+      toast.error('Error deleting product type');
     }
   }
 
-  const handleAddDeliveryOption = async () => {
+  const convertToKebabCase = (str) => {
+    return str.split(' ').join('-').toLowerCase();
+  };
+
+  const handleAddProductType = async () => {
     setIsLoading(true)
-    if(deliveryArea === '' || deliveryArea === ''){
-      toast.error('Please enter both delivery area and cost')
+    if(productType === ''){
+      toast.error('Please enter Product Type')
       setIsLoading(false)
     } else {
-      const area = deliveryArea;
-      const cost = parseInt(deliveryCost);
+      const label = productType;
+      const path = convertToKebabCase(productType);
+      console.log(label, path)
       try {
         setIsLoading(true)
-        const res = await axiosSecure.post('/layout/deliveryCharge', {area, cost})
-        console.log("🚀 ~ handleAddDeliveryOption ~ res:", res)
-        console.log('Product added successfully:', res.data);
-        toast.success('Delivery Option added successfully');
-        setDeliveryArea('')
-        setDeliveryCost(0)
-        fetchDeliveryCharge()
+        const res = await axiosSecure.post('/layout/productTypes', {label, path})
+        console.log('Product Type added successfully:', res.data);
+        toast.success('Product Type added successfully');
+        setProductType('')
+        fetchProductTypes()
         setIsLoading(false)
       } catch (e) {
         setIsLoading(false)
-        console.error('Error adding delivery option:', e);
+        console.error('Error adding Product Type:', e);
       }
     }
   }
@@ -73,45 +73,35 @@ function ManageDeliveryCharge() {
       <div className="space-y-5">
         <div className="border-1 border-gray-200 rounded-md">
           <div className="px-4 border-b-1 gap-2 py-2 flex flex-col md:flex-row items-center justify-between">
-            <h1>Dalevery Charge</h1>
+            <h1>Product Type</h1>
           </div>
           <div className="p-4">
           <div className="flex items-end   justify-normal gap-4">
             <Input
-              label="Delivery Area"
-              placeholder="Type Area"
-              value={deliveryArea}
+              label="Product Type"
+              placeholder="Write Product Type"
+              value={productType}
               labelPlacement="outside"
-              onValueChange={setDeliveryArea}
+              onValueChange={setProductType}
               className="max-w-xs"
               type="text"
               variant="faded"
             />
-            <Input
-              label="Delivery Cost"
-              placeholder="Enter Amount"
-              value={deliveryCost}
-              labelPlacement="outside"
-              onValueChange={setDeliveryCost}
-              className="max-w-xs"
-              type="number"
-              variant="faded"
-            />
-            <Button isLoading={isLoading} isDisabled={isLoading} onClick={handleAddDeliveryOption} color="primary">Add  Delivery Option</Button>
+            <Button isLoading={isLoading} isDisabled={isLoading} onClick={handleAddProductType} color="primary">Add  Product Types</Button>
           </div>
           </div>
           <div className="p-4">
           <Table isStriped aria-label="Example table with dynamic content">
             <TableHeader>
-              <TableColumn key={"deliveryArea"}>{"Delivery Area"}</TableColumn>
-              <TableColumn key={"deliveryCost"}>{"Delivery Cost"}</TableColumn>
+              <TableColumn key={"label"}>{"Product Type"}</TableColumn>
+              <TableColumn key={"path"}>{"Product Type Path"}</TableColumn>
               <TableColumn key={"actions"}>{"Actions"}</TableColumn>
             </TableHeader>
             <TableBody emptyContent={"No items to display."}>
-              {deliveryChargeInfo.map(item => (
+              {productTypesInfo.map(item => (
                 <TableRow key={item._id}>
-                  <TableCell>{item?.deliveryArea}</TableCell>
-                  <TableCell>{item?.deliveryCost}</TableCell>
+                  <TableCell>{item?.label}</TableCell>
+                  <TableCell>{item?.path}</TableCell>
                   <TableCell>
                     <Button isLoading={isLoading} size="md" variant="light" isIconOnly 
                     onClick={() => handleDeleteDelivery(item._id)} 
@@ -131,4 +121,4 @@ function ManageDeliveryCharge() {
 }
 
 
-export default ManageDeliveryCharge
+export default ManageProductTypes

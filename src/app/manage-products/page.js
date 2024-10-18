@@ -125,7 +125,8 @@ export default function ManageProductsPage() {
   }, [axiosPublic, refetch]);
 
   const handleUpdateProduct = (_id) => {
-    router.push(`/manage-products/${_id}`);
+    // router.push(`/manage-products/${_id}`);
+    toast.error("This Function is under construction!")
   }
   
   const [page, setPage] = useState(1);
@@ -229,6 +230,11 @@ export default function ManageProductsPage() {
             <span onClick={() => handleUpdateProduct(item._id)} className="text-lg text-black cursor-pointer active:opacity-50">
               <RiEdit2Fill />
             </span>
+          </Tooltip>
+          <Tooltip color="default" content="View Product">
+            <Link isExternal href={`https://smartoriginalbrand.com/product/default?id=${item._id}`} className="text-lg text-black cursor-pointer active:opacity-50">
+              <LuEye />
+            </Link>
           </Tooltip>
           <Tooltip color="danger" content="Delete">
             <span onClick={() => handleDeleteProduct(item)} className="text-lg text-danger cursor-pointer active:opacity-50">

@@ -1,6 +1,6 @@
 import { FaChartPie, FaBloggerB } from "react-icons/fa6";
 import { FaUsers } from "react-icons/fa";
-import { MdAddBusiness, MdOutlineManageSearch } from "react-icons/md";
+import { MdAddBusiness, MdOutlineManageSearch, MdAllInbox } from "react-icons/md";
 import { FiPackage } from "react-icons/fi";
 import { USER_ROLE } from "@/constants/role";
 import { TbCategoryPlus } from "react-icons/tb";
@@ -53,6 +53,11 @@ export const drawerItems = (role) => {
                title: 'Manage Users',
                path: `/manage-users`,
                icon: FaUsers,
+            },
+            {
+               title: 'Support Mail',
+               path: `/manage-layout/manage-support-mail`,
+               icon: MdAllInbox,
             }
          );
          break;

@@ -30,7 +30,7 @@ function DashbaordSidebar({children}) {
                   <ThreeLineIcon />
               </Button>
               <Link href="/" color="foreground" className="flex items-center gap-2 justify-center">
-                <Image src={"/images/logoline.png"} width={170} height={25} priority={true} alt='brand logo'/>
+                <Image src={"https://firebasestorage.googleapis.com/v0/b/smart-original-brand.appspot.com/o/lauoytImages%2Flogoline.png?alt=media&token=9d80f142-37eb-48d5-be73-c37ee0dd2cfd"} width={170} height={25} priority={true} alt='brand logo'/>
               </Link>
             </div>
           </div>

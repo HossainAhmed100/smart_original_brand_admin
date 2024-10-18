@@ -30,6 +30,15 @@ function AddProductPage() {
   const [loadingUplaodVariation, setLoadingUplaodVariation] = useState(false);
   const axiosPublic = useAxiosPublic();
 
+  const {data: productTypesInfo = []} = useQuery({
+    queryKey: ["productTypesInfo"],
+    queryFn: async () => {
+      const res = await axiosPublic.get('/layout/productTypes');
+      return res.data;
+    },
+  })
+  
+
   const {data: sizeGuideInfo = []} = useQuery({
     queryKey: ["sizeGuideInfo"],
     queryFn: async () => {
@@ -54,7 +63,11 @@ function AddProductPage() {
         return res.data;
     },
     })
-
+    
+  const getProductTypeById = (id) => {
+    const ids = parseInt(id)
+    return productTypeArr.find((product) => product.id === ids);
+  }; 
   const onSubmit = async (data) => {
     setLoading(true);
     try {
@@ -82,6 +95,7 @@ function AddProductPage() {
     setLoading(true);
     const { title, brand, category, description, gender } = data;
     const slug = generateSlug(title);
+    const path = data.productType;
     const originalPrice = parseFloat(data.originalPrice);
     const sellingPrice = parseFloat(data.sellingPrice);
     const quantity = parseInt(data.quantity);
@@ -92,7 +106,7 @@ function AddProductPage() {
     const thumbImage = [images[0], images[1]];
     const newProduct = {
       category,
-      type: category,
+      type: path,
       name: title,
       gender,
       new: false,
@@ -183,164 +197,6 @@ function AddProductPage() {
     {key: "xl", label: "XL"},
     {key: "xxl", label: "XXL"},
     {key: "3xl", label: "3XL"},
-  ];
-
-  const productTypeArr = [
-    {
-      id: 1,
-      label: "Long Sleeve",
-      path: "long-sleeve",
-    },
-    {
-      id: 2,
-      label: "V-Neck",
-      path: "v-neck",
-    },
-    {
-      id: 3,
-      label: "Relaxed Fit",
-      path: "relaxed-fit",
-    },
-    {
-      id: 4,
-      label: "Athletic Fit",
-      path: "athletic-fit",
-    },
-    {
-      id: 5,
-      label: "Special Interest T-Shirt",
-      path: "special-interest",
-    },
-    {
-      id: 6,
-      label: "Formal Shirt",
-      path: "formal",
-    },
-    {
-      id: 7,
-      label: "Casual Shirt",
-      path: "casual",
-    },
-    {
-      id: 8,
-      label: "Half Sleeve Shirt",
-      path: "half-sleeve",
-    },
-    {
-      id: 9,
-      label: "Full Sleeve Shirt",
-      path: "full-sleeve",
-    },
-    {
-      id: 10,
-      label: "Printed Shirt",
-      path: "printed",
-    },
-    {
-      id: 11,
-      label: "Solid Shirt",
-      path: "solid",
-    },
-    {
-      id: 12,
-      label: "Club Shirt",
-      path: "club",
-    },
-    {
-      id: 13,
-      label: "Men's Polo",
-      path: "mens-polo",
-    },
-    {
-      id: 14,
-      label: "Women's Polo",
-      path: "womens-polo",
-    },
-    {
-      id: 15,
-      label: "Classic Fit Polo",
-      path: "classic-fit",
-    },
-    {
-      id: 16,
-      label: "Long Sleeve Polo",
-      path: "long-sleeve-polo",
-    },
-    {
-      id: 17,
-      label: "Pocket Polos",
-      path: "pocket-polos",
-    },
-    {
-      id: 18,
-      label: "Jeans",
-      path: "jeans",
-    },
-    {
-      id: 19,
-      label: "Chinos",
-      path: "chinos",
-    },
-    {
-      id: 20,
-      label: "Formal Bottom",
-      path: "formal-bottom",
-    },
-    {
-      id: 21,
-      label: "Joggers",
-      path: "joggers",
-    },
-    {
-      id: 22,
-      label: "Cargo",
-      path: "cargo",
-    },
-    {
-      id: 23,
-      label: "Shorts",
-      path: "shorts",
-    },
-    {
-      id: 24,
-      label: "Pajama",
-      path: "pajama",
-    },
-    {
-      id: 25,
-      label: "Gurkha Pants",
-      path: "gurkha-pants",
-    },
-    {
-      id: 26,
-      label: "Blazer",
-      path: "blazer",
-    },
-    {
-      id: 27,
-      label: "Jacket",
-      path: "jacket",
-    },
-    {
-      id: 28,
-      label: "Sweater",
-      path: "sweater",
-    },
-    {
-      id: 29,
-      label: "Sweatshirt",
-      path: "sweatshirt",
-    },
-    {
-      id: 30,
-      label: "Hoodie",
-      path: "hoodie",
-    },
-    {
-      id: 31,
-      label: "T-Shirt (Woman)",
-      path: "t-shirt",
-    }
   ];
 
   const genderArray = [
@@ -485,7 +341,7 @@ function AddProductPage() {
           label="Product Name" 
           placeholder="Enter product name" fullWidth />
           {errors.title && <span className="text-tiny text-red-500">This field is required</span>}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
             <Input {...register("brand", { required: true })} 
             labelPlacement="outside" 
@@ -501,12 +357,26 @@ function AddProductPage() {
               variant="faded" radius="sm" 
               placeholder="Select a Category" fullWidth>
               {categoryInfo.map((category) => (
-                <SelectItem className="text-medium" key={category.key} textValue={category.label}>
+                <SelectItem className="text-medium" key={category.path} textValue={category.label}>
                   {category.label}
                 </SelectItem>
               ))}
             </Select>
             {errors.category && <span className="text-tiny text-red-500">This field is required</span>}
+            </div>
+            <div>
+            <Select {...register("productType", { required: true })} 
+              label="Product Type" 
+              labelPlacement="outside" 
+              variant="faded" radius="sm" 
+              placeholder="Select a Product Type" fullWidth>
+              {productTypesInfo.map((type) => (
+                <SelectItem className="text-medium" key={type.path} textValue={type.label}>
+                  {type.label}
+                </SelectItem>
+              ))}
+            </Select>
+            {errors.productType && <span className="text-tiny text-red-500">This field is required</span>}
             </div>
           </div>
         </div>

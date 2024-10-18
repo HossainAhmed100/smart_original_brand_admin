@@ -2,9 +2,10 @@ import axios from "axios";
 
 // Create an Axios instance with a base URL for making HTTP requests
 const axiosPublic = axios.create({
-    baseURL: 'http://localhost:5000/api/'
+  baseURL: 'http://localhost:5000/api/'
 });
 
+// baseURL: 'https://smartserver.smartoriginalbrand.com/api/'
 // Custom hook to return the Axios instance
 const useAxiosPublic = () => {
     return axiosPublic;
