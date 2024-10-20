@@ -6,6 +6,8 @@ const axiosPublic = axios.create({
 });
 
 // baseURL: 'https://smartserver.smartoriginalbrand.com/api/'
+// baseURL: 'http://localhost:5000/api/'
+
 // Custom hook to return the Axios instance
 const useAxiosPublic = () => {
     return axiosPublic;

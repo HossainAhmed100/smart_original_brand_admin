@@ -9,6 +9,9 @@ const axiosSecure = axios.create({
     baseURL: 'https://smartserver.smartoriginalbrand.com/api/'
 })
 
+// baseURL: 'https://smartserver.smartoriginalbrand.com/api/'
+// baseURL: 'http://localhost:5000/api/'
+
 const useAxiosSecure = () => {
     const router = useRouter();
     const [signOut] = useSignOut(auth);

@@ -1,6 +1,6 @@
 import { FaChartPie, FaBloggerB } from "react-icons/fa6";
 import { FaUsers } from "react-icons/fa";
-import { MdAddBusiness, MdOutlineManageSearch, MdAllInbox } from "react-icons/md";
+import { MdAddBusiness, MdOutlineManageSearch, MdAllInbox, MdPermMedia } from "react-icons/md";
 import { FiPackage } from "react-icons/fi";
 import { USER_ROLE } from "@/constants/role";
 import { TbCategoryPlus } from "react-icons/tb";

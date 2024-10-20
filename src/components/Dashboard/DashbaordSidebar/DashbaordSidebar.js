@@ -1,7 +1,6 @@
 "use client"
 import { Button, Link } from "@nextui-org/react";
 import { useSignOut } from "react-firebase-hooks/auth";
-import Swal from "sweetalert2";
 import { useState } from "react";
 import { FaArrowRightFromBracket } from "react-icons/fa6";
 import { auth } from "@/firebase/firebase.config";
@@ -9,8 +8,10 @@ import { useRouter } from "next/navigation";
 import ThreeLineIcon from "@/assets/SVGIcons/ThreeLineIcon";
 import Image from "next/image";
 import Sidebar from "../Sidebar/Sidebar";
+import { useAuth } from "@/context/AuthContext";
 
 function DashbaordSidebar({children}) {
+  const {logout} = useAuth();
   // State to track the open/close status of the mobile menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -18,6 +19,13 @@ function DashbaordSidebar({children}) {
   const router = useRouter();
   // Hook to sign out user
   const [signOut] = useSignOut(auth);
+
+  const handleSignOut = async () => {
+    const success = await signOut();
+    if(success){
+      logout()
+    }
+  }
   
   return (
     <div>
@@ -44,19 +52,7 @@ function DashbaordSidebar({children}) {
           </div>
         </div>
         <div className="mt-auto p-4 flex flex-col">
-        <Button size="sm" onClick={async () => {
-            const success = await signOut();
-            if (success) {
-               router.push("/login")
-              Swal.fire({
-                  position: "top-end",
-                  icon: "success",
-                  title: "Logout Successfull",
-                  showConfirmButton: false,
-                  timer: 1500
-                });
-            }
-          }}  
+        <Button size="sm" onClick={() => handleSignOut()}  
           className="bg-gray-900 text-white shadow-lg" 
           startContent={<FaArrowRightFromBracket />}>
           Sign Out

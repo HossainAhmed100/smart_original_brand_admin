@@ -17,7 +17,7 @@ function UserOrdersCard({item}) {
       </div>
       <div className="p-4 space-y-2">
         {
-          myCart.map(item => {
+          myCart.map(item => { 
             return (
               <div className="flex border-1 rounded-lg border-gray-200 items-center justify-start" key={item.slug}>
                 <div className="px-4  border-r-1">

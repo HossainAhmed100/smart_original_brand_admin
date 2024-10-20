@@ -287,7 +287,7 @@ export default function ManageProductsPage() {
           <Input
             isClearable
             className="w-full sm:max-w-[44%]"
-            placeholder="Search by Style name..."
+            placeholder="Search by Product Name..."
             startContent={<SearchIcon />}
             value={filterValue}
             onClear={() => onClear()}
@@ -342,7 +342,7 @@ export default function ManageProductsPage() {
           </div>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-default-400 text-small">Total {productData.length} Project</span>
+          <span className="text-default-400 text-small">Total {productData.length} Products</span>
           <label className="flex items-center text-default-400 text-small">
             Rows per page:
             <select
